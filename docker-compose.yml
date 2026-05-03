@@ -1,0 +1,12 @@
+services:
+  postgres:
+    build:
+      context: ./docker/postgres
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - booking_pg_data:/var/lib/postgresql/data
+
+volumes:
+  booking_pg_data:

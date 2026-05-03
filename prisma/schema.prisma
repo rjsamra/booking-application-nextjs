@@ -1,0 +1,60 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Hotel {
+  id          String   @id @default(cuid())
+  name        String
+  city        String
+  country     String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  rooms       Room[]
+}
+
+model Room {
+  id            String    @id @default(cuid())
+  hotelId       String
+  hotel         Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  maxGuests     Int       @default(2)
+  pricePerNight Decimal   @db.Decimal(10, 2)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bookings      Booking[]
+
+  @@index([hotelId])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model Booking {
+  id         String          @id @default(cuid())
+  roomId     String
+  room       Room            @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  checkIn    DateTime        @db.Date
+  checkOut   DateTime        @db.Date
+  guestName  String
+  guestEmail String
+  totalPrice Decimal         @db.Decimal(10, 2)
+  status     BookingStatus   @default(CONFIRMED)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([roomId])
+  @@index([checkIn, checkOut])
+}
