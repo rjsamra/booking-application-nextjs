@@ -9,6 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "e2e": "npm --prefix ../cypress run e2e",
+    "e2e:open": "npm --prefix ../cypress run cypress:open",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
