@@ -1,5 +1,6 @@
 "use client";
 
+import { BOOKING_NOTE_MAX_LENGTH } from "@/lib/booking-notes";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,6 +14,8 @@ type BookingDetail = {
   guestEmail: string;
   totalPrice: string;
   status: string;
+  internalNotes: string | null;
+  guestSpecialRequests: string | null;
   room: {
     id: string;
     name: string;
@@ -63,6 +66,8 @@ export default function EditBookingPage() {
       status: String(fd.get("status") ?? "").trim(),
       checkIn: String(fd.get("checkIn") ?? "").trim(),
       checkOut: String(fd.get("checkOut") ?? "").trim(),
+      guestSpecialRequests: String(fd.get("guestSpecialRequests") ?? ""),
+      internalNotes: String(fd.get("internalNotes") ?? ""),
     };
     const res = await fetch(`/api/admin/bookings/${bookingId}`, {
       method: "PATCH",
@@ -115,13 +120,67 @@ export default function EditBookingPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="mt-8 w-full space-y-4 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
+        className="mt-8 w-full space-y-8 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
       >
         {error ? (
           <p className="text-sm text-red-700 dark:text-red-300" role="alert">
             {error}
           </p>
         ) : null}
+
+        <section className="space-y-2 border-b border-zinc-100 pb-6 dark:border-zinc-800/80">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Guest special requests
+          </h2>
+          {!booking.guestSpecialRequests ? (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              The guest did not submit special requests on the booking form.
+            </p>
+          ) : null}
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="sr-only">Guest special requests</span>
+            <textarea
+              key={`g-${booking.id}-${booking.guestSpecialRequests ?? ""}`}
+              name="guestSpecialRequests"
+              rows={4}
+              maxLength={BOOKING_NOTE_MAX_LENGTH}
+              defaultValue={booking.guestSpecialRequests ?? ""}
+              placeholder="Guest-submitted requests; staff may correct typos."
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-50"
+            />
+          </label>
+        </section>
+
+        <section className="space-y-2 border-b border-zinc-100 pb-6 dark:border-zinc-800/80">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Internal notes
+          </h2>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Staff-only — never shown to guests or on the public booking site.
+          </p>
+          {!booking.internalNotes ? (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No internal notes yet. Add context for your team.
+            </p>
+          ) : null}
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="sr-only">Internal notes</span>
+            <textarea
+              key={`i-${booking.id}-${booking.internalNotes ?? ""}`}
+              name="internalNotes"
+              rows={4}
+              maxLength={BOOKING_NOTE_MAX_LENGTH}
+              defaultValue={booking.internalNotes ?? ""}
+              placeholder="Handoffs, disputes, operational context…"
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-50"
+            />
+          </label>
+        </section>
+
+        <div className="space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Booking details
+          </h2>
         <div>
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Status
@@ -199,6 +258,7 @@ export default function EditBookingPage() {
         >
           {pending ? "Saving…" : "Save changes"}
         </button>
+        </div>
       </form>
     </div>
   );

@@ -54,6 +54,8 @@ const existingBooking = {
   guestEmail: "prior@example.com",
   totalPrice: { toString: () => "400.00" },
   status: "CONFIRMED" as const,
+  internalNotes: null as string | null,
+  guestSpecialRequests: "Late check-in" as string | null,
   createdAt: new Date("2026-02-01T00:00:00.000Z"),
   room: {
     id: "room-1",
@@ -70,6 +72,8 @@ const updatedBooking = {
   guestName: "Bob",
   guestEmail: "bob@example.com",
   status: "CONFIRMED" as const,
+  internalNotes: "VIP — comp minibar" as string | null,
+  guestSpecialRequests: "Late check-in" as string | null,
   totalPrice: { toString: () => "400.00" },
   room: {
     id: "room-1",
@@ -125,6 +129,8 @@ describe("GET /api/admin/bookings/[bookingId]", () => {
       guestEmail: "ada@example.com",
       totalPrice: { toString: () => "300.00" },
       status: "PENDING",
+      internalNotes: null,
+      guestSpecialRequests: "Ground floor if possible",
       createdAt: new Date("2026-03-20T08:00:00.000Z"),
       room: {
         id: "room-1",
@@ -151,6 +157,8 @@ describe("GET /api/admin/bookings/[bookingId]", () => {
         guestEmail: "ada@example.com",
         totalPrice: "300.00",
         status: "PENDING",
+        internalNotes: null,
+        guestSpecialRequests: "Ground floor if possible",
         createdAt: "2026-03-20T08:00:00.000Z",
         room: {
           id: "room-1",
@@ -180,6 +188,8 @@ describe("PATCH /api/admin/bookings/[bookingId]", () => {
     checkOut: "2026-06-05",
     guestName: "Bob",
     guestEmail: "bob@example.com",
+    internalNotes: "VIP — comp minibar",
+    guestSpecialRequests: "Late check-in",
   };
 
   beforeEach(() => {
@@ -249,6 +259,21 @@ describe("PATCH /api/admin/bookings/[bookingId]", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it("returns 422 when internalNotes exceeds max length", async () => {
+    const res = await PATCH(
+      patchRequest({
+        ...validBody,
+        internalNotes: "x".repeat(5001),
+      }),
+      ctx,
+    );
+    expect(res.status).toBe(422);
+    expect(update).not.toHaveBeenCalled();
+    const json = await res.json();
+    expect(json.error.code).toBe("VALIDATION_ERROR");
+    expect(String(json.error.message)).toMatch(/5000|5,000/);
+  });
+
   it("returns 422 when check-out is on or before check-in", async () => {
     const res = await PATCH(
       patchRequest({
@@ -313,6 +338,8 @@ describe("PATCH /api/admin/bookings/[bookingId]", () => {
         guestEmail: "bob@example.com",
         totalPrice: "400.00",
         status: "CONFIRMED",
+        internalNotes: "VIP — comp minibar",
+        guestSpecialRequests: "Late check-in",
         createdAt: "2026-02-01T00:00:00.000Z",
         room: {
           id: "room-1",
@@ -334,6 +361,8 @@ describe("PATCH /api/admin/bookings/[bookingId]", () => {
         status: "CONFIRMED",
         guestName: "Bob",
         guestEmail: "bob@example.com",
+        internalNotes: "VIP — comp minibar",
+        guestSpecialRequests: "Late check-in",
       }),
       include: {
         room: {

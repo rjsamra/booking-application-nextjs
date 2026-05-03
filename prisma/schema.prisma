@@ -62,17 +62,19 @@ enum BookingStatus {
 }
 
 model Booking {
-  id         String          @id @default(cuid())
-  roomId     String
-  room       Room            @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  checkIn    DateTime        @db.Date
-  checkOut   DateTime        @db.Date
-  guestName  String
-  guestEmail String
-  totalPrice Decimal         @db.Decimal(10, 2)
-  status     BookingStatus   @default(CONFIRMED)
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  id                   String          @id @default(cuid())
+  roomId               String
+  room                 Room            @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  checkIn              DateTime        @db.Date
+  checkOut             DateTime        @db.Date
+  guestName            String
+  guestEmail           String
+  totalPrice           Decimal         @db.Decimal(10, 2)
+  status               BookingStatus   @default(CONFIRMED)
+  internalNotes        String?         @db.Text
+  guestSpecialRequests String?         @db.Text
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
   @@index([roomId])
   @@index([checkIn, checkOut])

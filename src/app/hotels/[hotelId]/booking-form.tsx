@@ -1,5 +1,6 @@
 "use client";
 
+import { BOOKING_NOTE_MAX_LENGTH } from "@/lib/booking-notes";
 import { useFormState, useFormStatus } from "react-dom";
 import type { BookingFormState } from "./actions";
 import { createBooking } from "./actions";
@@ -135,6 +136,24 @@ export function BookingForm({
             className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           />
         </label>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Special requests (optional)
+          <textarea
+            name="guestSpecialRequests"
+            rows={4}
+            maxLength={BOOKING_NOTE_MAX_LENGTH}
+            placeholder="Accessibility, late arrival, celebrations…"
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          />
+        </label>
+        <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+          Tell us about accessibility needs, arrival time, or celebrations.
+          We’ll do our best to accommodate — specifics may be subject to
+          availability and are not a guarantee of a particular room.
+        </p>
       </div>
 
       {state?.error ? (

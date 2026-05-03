@@ -20,7 +20,14 @@ export default async function BookingConfirmationPage({
 
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    include: {
+    select: {
+      id: true,
+      checkIn: true,
+      checkOut: true,
+      guestName: true,
+      guestEmail: true,
+      totalPrice: true,
+      guestSpecialRequests: true,
       room: {
         include: { hotel: true },
       },
@@ -68,6 +75,16 @@ export default async function BookingConfirmationPage({
             <dt className="text-zinc-500 dark:text-zinc-500">Email</dt>
             <dd className="break-all text-right">{booking.guestEmail}</dd>
           </div>
+          {booking.guestSpecialRequests ? (
+            <div className="flex flex-col gap-1 border-t border-zinc-200 pt-3 dark:border-zinc-800 sm:flex-row sm:justify-between sm:gap-4">
+              <dt className="shrink-0 text-zinc-500 dark:text-zinc-500">
+                Special requests
+              </dt>
+              <dd className="whitespace-pre-wrap text-right text-zinc-800 dark:text-zinc-200 sm:max-w-[min(100%,28rem)]">
+                {booking.guestSpecialRequests}
+              </dd>
+            </div>
+          ) : null}
           <div className="flex justify-between gap-4 border-t border-zinc-200 pt-3 dark:border-zinc-800">
             <dt className="text-zinc-500 dark:text-zinc-500">Total</dt>
             <dd className="text-right text-lg font-semibold text-zinc-900 dark:text-zinc-50">

@@ -1,6 +1,7 @@
 "use server";
 
 import { Prisma } from "@/generated/prisma/client";
+import { validateBookingNoteField } from "@/lib/booking-notes";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
@@ -34,6 +35,9 @@ export async function createBooking(
   const checkOutRaw = String(formData.get("checkOut") ?? "").trim();
   const guestName = String(formData.get("guestName") ?? "").trim();
   const guestEmail = String(formData.get("guestEmail") ?? "").trim();
+  const guestSpecialRequestsRaw = String(
+    formData.get("guestSpecialRequests") ?? "",
+  );
 
   if (!hotelId || !roomId) {
     return { error: "Please choose a room." };
@@ -44,6 +48,12 @@ export async function createBooking(
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
     return { error: "Please enter a valid email address." };
   }
+
+  const noteErr = validateBookingNoteField(
+    guestSpecialRequestsRaw,
+    "Special requests",
+  );
+  if (noteErr) return { error: noteErr };
 
   const checkInParsed = parseDateOnly(checkInRaw, "Check-in");
   if (checkInParsed instanceof Date === false) return checkInParsed;
@@ -86,6 +96,12 @@ export async function createBooking(
   const nightly = new Prisma.Decimal(room.pricePerNight.toString());
   const total = nightly.mul(nights);
 
+  const guestSpecialRequestsTrimmed = guestSpecialRequestsRaw.trim();
+  const guestSpecialRequests =
+    guestSpecialRequestsTrimmed === ""
+      ? null
+      : guestSpecialRequestsTrimmed;
+
   const booking = await prisma.booking.create({
     data: {
       roomId: room.id,
@@ -95,6 +111,7 @@ export async function createBooking(
       guestEmail,
       totalPrice: total,
       status: "CONFIRMED",
+      guestSpecialRequests,
     },
   });
 

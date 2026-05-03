@@ -3,10 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/lib/api-json";
 import { requireAdmin } from "@/lib/auth-guard";
 import { NextResponse } from "next/server";
+import { BOOKING_NOTE_MAX_LENGTH } from "@/lib/booking-notes";
 import { countOverlappingBookings, nightCount } from "@/lib/booking-overlap";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
+
+const noteField = z
+  .string()
+  .max(
+    BOOKING_NOTE_MAX_LENGTH,
+    `Notes must be at most ${BOOKING_NOTE_MAX_LENGTH.toLocaleString()} characters.`,
+  );
 
 const patchSchema = z.object({
   status: z.enum(["PENDING", "CONFIRMED", "CANCELLED"]),
@@ -14,6 +22,8 @@ const patchSchema = z.object({
   checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   guestName: z.string().trim().min(1),
   guestEmail: z.string().trim().email(),
+  internalNotes: noteField.optional(),
+  guestSpecialRequests: noteField.optional(),
 });
 
 function parseDateOnly(value: string): Date | null {
@@ -50,6 +60,8 @@ export async function GET(
     guestEmail: booking.guestEmail,
     totalPrice: booking.totalPrice.toString(),
     status: booking.status,
+    internalNotes: booking.internalNotes,
+    guestSpecialRequests: booking.guestSpecialRequests,
     createdAt: booking.createdAt.toISOString(),
     room: {
       id: booking.room.id,
@@ -83,7 +95,16 @@ export async function PATCH(
 
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError(422, "VALIDATION_ERROR", parsed.error.flatten().formErrors.join(" "));
+    const flat = parsed.error.flatten();
+    const parts = [
+      ...flat.formErrors,
+      ...Object.values(flat.fieldErrors).flat().filter(Boolean),
+    ];
+    return jsonError(
+      422,
+      "VALIDATION_ERROR",
+      parts.length ? parts.join(" ") : "Validation failed.",
+    );
   }
 
   const patch = parsed.data;
@@ -130,16 +151,36 @@ export async function PATCH(
   const nightly = new Prisma.Decimal(existing.room.pricePerNight.toString());
   const totalPrice = nightly.mul(nights);
 
+  const data: {
+    status: (typeof patch)["status"];
+    checkIn: Date;
+    checkOut: Date;
+    totalPrice: Prisma.Decimal;
+    guestName: string;
+    guestEmail: string;
+    internalNotes?: string | null;
+    guestSpecialRequests?: string | null;
+  } = {
+    status: patch.status,
+    checkIn,
+    checkOut,
+    totalPrice,
+    guestName: patch.guestName,
+    guestEmail: patch.guestEmail,
+  };
+
+  if (patch.internalNotes !== undefined) {
+    const t = patch.internalNotes.trim();
+    data.internalNotes = t === "" ? null : t;
+  }
+  if (patch.guestSpecialRequests !== undefined) {
+    const t = patch.guestSpecialRequests.trim();
+    data.guestSpecialRequests = t === "" ? null : t;
+  }
+
   const booking = await prisma.booking.update({
     where: { id: bookingId },
-    data: {
-      status: patch.status,
-      checkIn,
-      checkOut,
-      totalPrice,
-      guestName: patch.guestName,
-      guestEmail: patch.guestEmail,
-    },
+    data,
     include: {
       room: {
         include: {
@@ -158,6 +199,8 @@ export async function PATCH(
     guestEmail: booking.guestEmail,
     totalPrice: booking.totalPrice.toString(),
     status: booking.status,
+    internalNotes: booking.internalNotes,
+    guestSpecialRequests: booking.guestSpecialRequests,
     createdAt: booking.createdAt.toISOString(),
     room: {
       id: booking.room.id,
