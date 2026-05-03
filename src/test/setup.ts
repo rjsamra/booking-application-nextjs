@@ -1,1 +1,9 @@
-// Vitest setup: extend here (e.g. @testing-library/jest-dom) when adding RTL tests.
+import { cleanup } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import { afterEach } from "vitest";
+
+afterEach(() => {
+  if (typeof document !== "undefined") {
+    cleanup();
+  }
+});
