@@ -42,7 +42,10 @@ export function BookingForm({
   );
 
   return (
-    <form action={formAction} className="mt-10 space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+    <form
+      action={formAction}
+      className="mt-10 w-full space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+    >
       <input type="hidden" name="hotelId" value={hotelId} />
       <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
         Book a stay

@@ -29,9 +29,6 @@ export default async function Home() {
           <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Staybook
           </span>
-          <span className="text-sm text-zinc-500 dark:text-zinc-400">
-            Simple hotel booking
-          </span>
         </div>
       </header>
 

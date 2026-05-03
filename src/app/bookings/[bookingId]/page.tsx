@@ -37,8 +37,8 @@ export default async function BookingConfirmationPage({
   }).format(Number(booking.totalPrice));
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-16 sm:px-6">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
+      <div className="w-full rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
         <p className="text-sm font-medium uppercase tracking-wide text-teal-700 dark:text-teal-400">
           Booking confirmed
         </p>

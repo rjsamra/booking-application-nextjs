@@ -41,7 +41,7 @@ export default async function HotelPage({
   }));
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       <Link
         href="/"
         className="text-sm font-medium text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
@@ -57,7 +57,7 @@ export default async function HotelPage({
               alt=""
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, 768px"
+              sizes="(max-width: 1024px) 100vw, 1152px"
               priority
             />
           ) : null}

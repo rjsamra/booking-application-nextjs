@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
+import bcrypt from "bcryptjs";
 import { Prisma, PrismaClient } from "../src/generated/prisma/client";
 
 const url = process.env.DATABASE_URL;
@@ -125,6 +126,24 @@ function addUtcDays(base: Date, days: number): Date {
 }
 
 async function main() {
+  // Auth: idempotent; re-hash demo password each seed so login is always "password".
+  const adminRole = await prisma.role.upsert({
+    where: { code: "ADMIN" },
+    create: { code: "ADMIN", label: "Administrator" },
+    update: { label: "Administrator" },
+  });
+
+  const passwordHash = await bcrypt.hash("password", 10);
+  await prisma.user.upsert({
+    where: { email: "test@example.com" },
+    create: {
+      email: "test@example.com",
+      passwordHash,
+      roleId: adminRole.id,
+    },
+    update: { passwordHash, roleId: adminRole.id },
+  });
+
   await prisma.booking.deleteMany();
   await prisma.room.deleteMany();
   await prisma.hotel.deleteMany();
@@ -187,16 +206,22 @@ async function main() {
     });
   }
 
-  const [hotelCount, roomCount, bookingCount] = await Promise.all([
-    prisma.hotel.count(),
-    prisma.room.count(),
-    prisma.booking.count(),
-  ]);
+  const [hotelCount, roomCount, bookingCount, roleCount, userCount] =
+    await Promise.all([
+      prisma.hotel.count(),
+      prisma.room.count(),
+      prisma.booking.count(),
+      prisma.role.count(),
+      prisma.user.count(),
+    ]);
 
-  console.log("Seed complete (mock data):", {
+  console.log("Seed complete (auth + mock data):", {
+    roles: roleCount,
+    users: userCount,
     hotels: hotelCount,
     rooms: roomCount,
     bookings: bookingCount,
+    adminLogin: "test@example.com / password",
   });
 }
 

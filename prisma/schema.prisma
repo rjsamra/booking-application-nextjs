@@ -9,6 +9,25 @@ datasource db {
   provider = "postgresql"
 }
 
+model Role {
+  id     String @id @default(cuid())
+  code   String @unique
+  label  String?
+  users  User[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([roleId])
+}
+
 model Hotel {
   id          String   @id @default(cuid())
   name        String
