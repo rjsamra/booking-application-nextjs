@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { recordRequest } from "@/lib/metrics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,11 +20,18 @@ export const metadata: Metadata = {
   description: "Browse hotels, choose a room, and book your stay.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const h = await headers();
+  const pathname = h.get("x-obs-pathname");
+  const method = h.get("x-obs-method");
+  if (pathname && method) {
+    recordRequest(method, pathname);
+  }
+
   return (
     <html
       lang="en"

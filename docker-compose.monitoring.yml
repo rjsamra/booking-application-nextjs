@@ -1,0 +1,23 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+
+  datadog:
+    # Docker Hub image avoids gcr.io (stops broken gcloud docker-credential-gcloud on many dev machines)
+    image: datadog/agent:latest
+    ports:
+      - "8126:8126"
+    environment:
+      DD_API_KEY: dummy_key
+      DD_APM_ENABLED: "true"
+      DD_LOGS_ENABLED: "true"
+      DD_SITE: datadoghq.com

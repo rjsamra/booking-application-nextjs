@@ -2,12 +2,21 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+function nextWithObsHeaders(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-obs-pathname", request.nextUrl.pathname);
+  requestHeaders.set("x-obs-method", request.method);
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAdminUi = pathname.startsWith("/admin");
   const isAdminApi = pathname.startsWith("/api/admin");
   if (!isAdminUi && !isAdminApi) {
-    return NextResponse.next();
+    return nextWithObsHeaders(request);
   }
 
   const secret = process.env.AUTH_SECRET;
@@ -51,9 +60,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(login);
   }
 
-  return NextResponse.next();
+  return nextWithObsHeaders(request);
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

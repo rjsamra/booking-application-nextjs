@@ -1,9 +1,15 @@
 "use client";
 
 import { BOOKING_NOTE_MAX_LENGTH } from "@/lib/booking-notes";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { BookingFormState } from "./actions";
 import { createBooking } from "./actions";
+
+const usd = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
 
 type RoomOption = {
   id: string;
@@ -37,7 +43,7 @@ export function BookingForm({
   defaultCheckIn: string;
   defaultCheckOut: string;
 }) {
-  const [state, formAction] = useFormState<BookingFormState, FormData>(
+  const [state, formAction] = useActionState<BookingFormState, FormData>(
     createBooking,
     null,
   );
@@ -103,10 +109,7 @@ export function BookingForm({
                 ) : null}
                 <span className="mt-1 block text-sm text-zinc-500 dark:text-zinc-500">
                   Up to {room.maxGuests} guests ·{" "}
-                  {new Intl.NumberFormat(undefined, {
-                    style: "currency",
-                    currency: "USD",
-                  }).format(Number(room.pricePerNight))}{" "}
+                  {usd.format(Number(room.pricePerNight))}{" "}
                   / night
                 </span>
               </span>

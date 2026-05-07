@@ -1,7 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg", "pg"],
+  serverExternalPackages: [
+    "@prisma/client",
+    "@prisma/adapter-pg",
+    "pg",
+    "prom-client",
+    "dd-trace",
+    "pino",
+    "pino-pretty",
+    "thread-stream",
+  ],
   images: {
     remotePatterns: [
       {
